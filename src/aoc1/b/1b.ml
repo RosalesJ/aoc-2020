@@ -22,7 +22,6 @@ let report_repair3 target xs =
     | Some x -> x
   in
   loop 0
-      
 
 let () =
   let target = 2020 in

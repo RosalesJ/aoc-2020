@@ -6,12 +6,12 @@ let test_policy lb ub c password =
     let count = String.count ~f:(Char.equal c) password in
     count >= lb && count <= ub
 
-let single_policy = 
+let single_policy =
   let num = take_while1 Char.is_digit >>| Int.of_string in
-  lift4 test_policy 
+  lift4 test_policy
     (num <* char '-')
     (num <* char ' ')
-    (any_char <* string ": ") 
+    (any_char <* string ": ")
     (take_while Char.is_alpha)
 
 let password_philosophy input =
