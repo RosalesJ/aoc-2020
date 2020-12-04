@@ -5,16 +5,14 @@ let toboggan_trajectory matrix dx dy =
   let rec loop x y count =
     if y >= Array.length matrix then
       count
-    else begin
+    else
       let cur_row = Array.get matrix y in
       let cur_space = String.get cur_row x in
       let x = (x + dx) mod (String.length cur_row) in
-      let y = (y + dy) in
-      if Char.equal '#' cur_space then
-        loop x y (count + 1)
-      else
-        loop x y count
-    end
+      let y =  y + dy in
+      match cur_space with
+      | '#' -> loop x y (count + 1)
+      | _   -> loop x y count
   in
   loop 0 0 0
 
