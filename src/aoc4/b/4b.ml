@@ -48,7 +48,6 @@ let valid = function
 | PassportId id -> String.length id = 9
 | CountryId _ -> true
 
-
 let digits = take_while1 Char.is_digit
 let num = digits >>| Int.of_string
 let anything = take_while1 (function '\n' | ' ' -> false | _ -> true)
@@ -82,9 +81,7 @@ let field = birth_year
         <|> country_id
 
 let passport =
-  let field_or_invalid = (field >>| fun x -> Valid x)
-                     <|> (anything >>| fun x -> Invalid x)
-  in
+  let field_or_invalid = (field >>| fun x -> Valid x) <|> (anything >>| fun x -> Invalid x) in
   sep_by (char ' ' <|> char '\n') field_or_invalid
 
 let validate_passport xs =
@@ -99,22 +96,9 @@ let validate_passport xs =
 
 let passport_processing input =
   match Angstrom.parse_string (sep_by (string "\n\n") passport) input ~consume:Prefix with
-  | Error _ -> printf "nothing"; 0
+  | Error _ -> 0
   | Ok xs ->
     let results = List.map xs ~f:validate_passport in
-    (* printf "\n%d\n" (List.length xs); *)
-    (* List.iter xs ~f:(fun field -> printf "%d " (List.length field)); print_endline ""; *)
-    (* List.iter results ~f:(printf "%b "); print_endline ""; *)
-    List.iter xs ~f:(fun x ->
-      List.iter x ~f:(function
-      | Valid x when not (valid x)-> printf "- det: %s\n" (show x)
-      | Invalid z -> printf "- inv: %s\n" z
-      | Valid x -> printf "- val: %s\n" (show x)
-      );
-    );
-    (* List.iter (List.nth_exn xs 14) ~f:(function
-    | Valid x -> printf "val: %s\n" (field_name x)
-    | Invalid z -> printf "inv: %s\n" z); *)
     List.count results ~f:Fn.id
 
 let () =

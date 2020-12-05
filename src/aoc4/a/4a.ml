@@ -19,9 +19,7 @@ let passport_valid pp =
 let passport_processing input =
   let xs = Str.split_delim (Str.regexp "\n\n") input in
   let results = List.map xs ~f:passport_valid in
-  (* List.iter ~f:(printf "%b\n") results; *)
   List.count ~f:(fun x -> x) results
-
 
 let () =
   In_channel.create "./src/aoc4/input.txt"
