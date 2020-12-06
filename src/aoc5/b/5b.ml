@@ -23,17 +23,6 @@ let rec show plane =
   | Row r -> show_row r
   | Section {front; back} -> sprintf "%s\n%s" (show front) (show back)
 
-let rec seats_in_row row =
-  match row with
-  | Seat s -> [s]
-  | Subrow {left; right} -> List.append (seats_in_row left) (seats_in_row right)
-
-let rec seats_on_plane plane =
-  match plane with
-  | Row r -> seats_in_row r
-  | Section {front; back} -> List.append (seats_on_plane front) (seats_on_plane back)
-
-
 let rec seats_to_row seats =
   match split seats with
   | [[seat]]      -> Seat seat
@@ -50,7 +39,7 @@ let build_plane ~rows ~cols =
   let seats = List.init rows ~f:(fun row -> List.init cols ~f:(fun column -> { row; column; occupied = false })) in
   let rows = List.map seats ~f:seats_to_row in
   let plane = rows_to_section rows in
-  plane
+  plane, seats
 
 let decode_seat plane encoding =
   let rec get_row section i =
@@ -76,26 +65,28 @@ let decode_seat plane encoding =
   let seat = get_seat row 7 in
   seat.occupied <- true
 
-let is_my_seat {row; occupied; _} =
-  not occupied && row <> 0 && row <> 127
+let is_my_seat set x =
+  let id = seat_id x in
+  not x.occupied &&
+  Set.mem set (id - 1) &&
+  Set.mem set (id + 1)
 
 let binary_boarding seat_codings =
-  let plane = build_plane ~cols:8 ~rows:128 in
-  List.iter ~f:(decode_seat plane) seat_codings;
-  let all_seats = seats_on_plane plane in
-  (printf "%s\n" (show plane));
+  let plane, seats = build_plane ~cols:8 ~rows:128 in
 
-  all_seats
-  |> List.find ~f:is_my_seat
+  List.iter ~f:(decode_seat plane) seat_codings;
+
+  let set = List.fold
+      (List.concat seats)
+      ~init:(Set.empty (module Int))
+      ~f:(fun acc x -> if x.occupied then Set.add acc (seat_id x) else acc)
+  in
+
+  List.find (List.concat seats) ~f:(is_my_seat set)
   |> function None -> 0 | Some x -> seat_id x
 
 let () =
-try
-  (* build_plane ~cols:8 ~rows:128
-  |> show
-  |> printf "%s\n"; *)
   In_channel.create "./src/aoc5/input.txt"
   |> In_channel.input_lines
   |> binary_boarding
   |> Stdio.printf "%d\n"
-with Failure f -> printf "I'm dumb: %s" f
