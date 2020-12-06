@@ -1,21 +1,19 @@
 open Core
 open Stdio
 
-let blue = Set.inter
-let empty = Set.empty (module Char)
-
-let collect_responses = String.fold ~init:empty ~f:Set.add
+let collect_responses = String.fold ~f:Set.add ~init:(Set.empty (module Char))
 
 let tally_group group =
-  let r = String.split_lines group
-  |> List.map ~f:collect_responses
+  let responses =
+    let people = String.split_lines group in
+    List.map people ~f:collect_responses
   in
-  List.fold r ~init:(List.hd_exn r) ~f:Set.inter
+  List.fold responses ~init:(List.hd_exn responses) ~f:Set.inter
   |> Set.count ~f:(Fn.const true)
 
 let custom_customs input =
-  let xs = Str.split_delim (Str.regexp "\n\n") input in
-  List.map xs ~f:tally_group
+  Str.split_delim (Str.regexp "\n\n") input
+  |> List.map ~f:tally_group
   |> List.sum (module Int) ~f:Fn.id
 
 let () =
