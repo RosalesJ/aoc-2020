@@ -30,8 +30,6 @@ let handheld_halting input =
   let rec loop instructions acc pos =
     if pos = Map.length instructions then
       Some acc
-    else if pos < 0 || Map.length instructions < pos then
-      failwith "Out of range"
     else begin
       let next = Map.find_exn instructions pos in
       if next.visited then

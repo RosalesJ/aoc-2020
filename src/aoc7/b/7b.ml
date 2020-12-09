@@ -37,10 +37,15 @@ let handy_haversacks input =
   let bag_key { modifier; color } = modifier ^ color in
   let rules = parse_rules input in
 
-  let forward_map = List.fold rules ~init:(Map.empty (module String)) ~f:(fun acc ({bag; _} as rule) -> Map.add_exn acc ~key:(bag_key bag) ~data:rule) in
+  let forward_map = List.fold rules
+    ~init:(Map.empty (module String))
+    ~f:(fun acc x -> Map.add_exn acc ~key:(bag_key x.bag) ~data:x)
+  in
 
-  let gold_bag = List.find_exn rules ~f:(fun {bag={color; modifier}; _} -> String.equal "gold" color && String.equal "shiny" modifier) in
-
+  let gold_bag = List.find_exn rules ~f:(fun x ->
+    String.equal "gold" x.bag.color &&
+    String.equal "shiny" x.bag.modifier)
+   in
 
   let rec loop rule = rule |> fun { children; _ } ->
     List.map children ~f:(fun (multiplier, bag) ->
