@@ -18,7 +18,7 @@ let adapter_array input =
     | _, x :: xs -> loop x (inc acc last x) xs
   in
   match loop 0 (0, 0, 0) input with
-  | (a, b, c) -> printf "%d, %d, %d\n" a b c; a * c
+  | (a, _, c) -> a * c
 
 let () =
   In_channel.create "./src/aoc10/input.txt"
