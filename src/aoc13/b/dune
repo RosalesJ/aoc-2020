@@ -1,0 +1,3 @@
+(executable
+ (name 13b)
+ (libraries core stdio angstrom str))
