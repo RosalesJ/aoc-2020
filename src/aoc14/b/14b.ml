@@ -42,10 +42,6 @@ let docking_data input =
   let data = parse_data input in
   let empty_mask = List.init 36  ~f:(const 'X') in
   let apply_mask mask adress =
-    printf "val: ";
-    (List.iter ~f:(printf "%c")) adress;
-    printf " -- %Ld\nmas: " (to_num adress);
-    (List.iter ~f:(printf "%c")) mask;
 
     let merge = List.map ~f:(function
       | '0', x -> x
@@ -56,10 +52,6 @@ let docking_data input =
     | l, Some (First xs) -> List.append (merge l) xs
     | l, _ -> merge l in
 
-    printf "\nmrg: ";
-    (List.iter ~f:(printf "%c")) merged;
-    printf "\nall:\n";
-    (List.iter ~f:(fun x -> List.iter ~f:(printf "%c") x; print_endline "")) (all_addresses merged);
     merged
   in
 
@@ -76,10 +68,8 @@ let docking_data input =
   let open Int64 in
 
   loop adresses empty_mask data
-  |> Map.fold ~init:(Int64.of_int 0) ~f:(fun ~key ~data acc ->
-    printf "%Ld: %Ld -- " key data;
-    print_endline "";
-    acc + data)
+  |> Map.data
+  |> List.reduce_exn ~f:(Int64.(+))
 
 let () =
   In_channel.create "./src/aoc14/input.txt"
