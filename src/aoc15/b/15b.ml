@@ -2,7 +2,7 @@ open Core
 
 type track = First of int | Mult of int * int
 
-let rambunctiuos_recitation target input =
+let rambunctious_recitation target input =
   let update i = Map.update ~f:(function None -> First i
   | Some (First fst) -> Mult (i, fst)
   | Some (Mult (fst, _)) -> Mult (i, fst))
@@ -15,10 +15,6 @@ let rambunctiuos_recitation target input =
   let map = List.foldi ~init:(Map.empty (module Int)) ~f:(fun i acc x -> update (i + 1) acc x) input in
 
   let rec loop visited i last =
-    if i mod 1000000 = 0 then begin
-      printf "%d %d\n" i last;
-      Stdio__Out_channel.flush Out_channel.stdout;
-    end;
     if i = target then
       last
     else
@@ -37,5 +33,5 @@ let rambunctiuos_recitation target input =
 let () =
   In_channel.create "./src/aoc15/input.txt"
   |> In_channel.input_all
-  |> rambunctiuos_recitation 30000000
+  |> rambunctious_recitation 30000000
   |> Format.printf "%d\n"

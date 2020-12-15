@@ -19,12 +19,9 @@ let rambunctiuos_recitation target input =
       last
     else
       match Map.find_exn visited last with
-      | First _ ->
-        printf "%d %d | %d\n" i last 0;
-        loop (update (i + 1) visited 0) (i + 1) 0
+      | First _ -> loop (update (i + 1) visited 0) (i + 1) 0
       | Mult (turn, prev) ->
         let say = turn - prev in
-        printf "%d %d | %d %d %d \n" i last turn prev say;
         loop (update (i + 1) visited say) (i + 1) say
   in
 
