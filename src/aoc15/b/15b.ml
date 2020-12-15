@@ -1,34 +1,23 @@
 open Core
 
-type track = First of int | Mult of int * int
-
 let rambunctious_recitation target input =
-  let update i = Map.update ~f:(function None -> First i
-  | Some (First fst) -> Mult (i, fst)
-  | Some (Mult (fst, _)) -> Mult (i, fst))
-  in
+  let input = List.map ~f:Int.of_string @@ String.split input ~on:',' in
+  let arr = Array.init (target + 1) ~f:(const None) in
+  List.iteri input ~f:(fun i x -> arr.(x) <- Some (i + 1));
 
-  let input = String.split input ~on:','
-    |> List.map ~f:Int.of_string
-  in
-
-  let map = List.foldi ~init:(Map.empty (module Int)) ~f:(fun i acc x -> update (i + 1) acc x) input in
-
-  let rec loop visited i last =
-    if i = target then
+  let rec loop turn last =
+    if turn > target then
       last
     else
-      match Map.find_exn visited last with
-      | First _ ->
-        loop (update (i + 1) visited 0) (i + 1) 0
-      | Mult (turn, prev) ->
-        let say = turn - prev in
-        loop (update (i + 1) visited say) (i + 1) say
+      let say =
+        match arr.(last) with
+        | None -> 0
+        | Some x -> (turn - 1) - x
+      in
+      arr.(last) <- Some (turn - 1);
+      loop (turn + 1) say
   in
-
-  let last = List.last_exn input in
-  let i = List.length input in
-  loop map i last
+  loop (List.length input + 1) (List.last_exn input)
 
 let () =
   In_channel.create "./src/aoc15/input.txt"
