@@ -25,51 +25,41 @@ let parse input =
 
 let ( >< ) x (l, u) = (l <= x && x <= u)
 let validate x r = x >< r.lo_range || x >< r.hi_range
-let is_valid rules ticket =
-  List.for_all ticket ~f:(fun x -> List.exists rules ~f:(validate x))
+let is_valid rules ticket = List.for_all ticket ~f:(fun x -> List.exists rules ~f:(validate x))
 
 let find_rule rules i map arr =
-  let matches = List.fold ~init:map rules ~f:(fun acc x ->
-    if Array.for_all arr ~f:Fn.(flip validate x) then
-      Map.add_multi acc ~key:x.name ~data:(i, x)
-    else acc)
-  in
-  matches
+  List.filter rules ~f:(fun r -> Array.for_all arr ~f:Fn.(flip validate r))
+  |> List.fold ~init:map ~f:(fun acc x -> Map.add_multi acc ~key:x.name ~data:(i, x))
+
+let rec decode acc matches =
+  if List.is_empty matches then acc
+  else
+    let (field_index, _) as l = List.find_map_exn ~f:(fun rules ->
+      if List.length rules = 1
+      then Some (List.hd_exn rules)
+      else None) matches
+    in
+    List.map matches ~f:(fun rules -> List.filter rules ~f:(fun (i, _) -> not (field_index = i)))
+    |> List.filter ~f:(fun x -> not (0 = List.length x))
+    |> decode (l :: acc)
 
 let ticket_translation input =
   let data = parse input in
   let valid_tickets = List.filter data.tickets ~f:(is_valid data.rules) in
-  let field_possibilities =
+  let departure_indexes =
     data.my_ticket :: valid_tickets
     |> List.map ~f:(Array.of_list)
     |> Array.of_list
     |> Array.transpose_exn
     |> Array.foldi ~init:(Map.empty (module String)) ~f:(find_rule data.rules)
-    |> Map.to_alist
-    |> List.map ~f:(fun (_, lis) -> lis)
+    |> Map.data
+    |> decode []
+    |> List.filter_map ~f:(fun (i, rule) -> Option.some_if
+      (String.is_substring rule.name ~substring:"departure") i)
   in
 
-  let rec loop matches acc =
-    if List.is_empty matches then acc
-    else(
-      List.iter matches ~f:(List.iter ~f:(fun (i, x) -> printf "m:: %d: %s\n" i x.name));
-      print_endline "";
-      List.iter acc ~f:(fun (i, x) -> printf "a:: %d: %s\n" i x.name);
-      print_endline "";
-      print_endline "";
-
-      let matching_rules = List.find_map_exn ~f:(fun rules -> if List.length rules = 1 then Some rules else None) matches in
-      let (field_index, _) as l = List.hd_exn matching_rules in
-      let matches = List.map matches ~f:(fun rules -> List.filter rules ~f:(fun (i, _) -> not (field_index = i))) in
-      let matches = List.filter matches ~f:(fun x -> not (0 = List.length x)) in
-      loop matches (l :: acc))
-  in
-  let decoded_fields = loop field_possibilities [] in
-  let departures = List.filter_map decoded_fields ~f:(fun (i, rule) ->
-    if String.is_substring rule.name ~substring:"departure" then Some i else None)
-  in
-  let my_departures = List.filteri data.my_ticket ~f:(fun i _ -> List.mem departures i ~equal:Int.equal) in
-  List.fold ~f:(( * )) ~init:1 my_departures
+  List.filteri data.my_ticket ~f:(fun i _ -> List.mem departure_indexes i ~equal:Int.equal)
+  |> List.fold ~f:(( * )) ~init:1
 
 
 let () =

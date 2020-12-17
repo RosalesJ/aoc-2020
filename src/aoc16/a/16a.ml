@@ -34,7 +34,6 @@ let ticket_translation input =
   List.rev_map data.tickets ~f:(is_valid data.rules)
   |> List.sum (module Int) ~f:ident
 
-
 let () =
   In_channel.create "./src/aoc16/input.txt"
   |> In_channel.input_all
