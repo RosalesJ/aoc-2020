@@ -1,23 +1,20 @@
 open Core
 open Angstrom
 
+let chainl1 e op =
+  let rec go acc =
+    (lift2 (fun f x -> f acc x) op e >>= go) <|> return acc in
+  e >>= fun init -> go init
+
 let operation_order input =
   let parens p = char '(' *> p <* char ')' in
   let add = string " + " *> return (+) in
-  let sub = string " - " *> return (-) in
   let mul = string " * " *> return ( * ) in
-  let div = string " / " *> return (/) in
   let integer = take_while1 Char.is_digit >>| Int.of_string in
-
-  let chainl1 e op =
-    let rec go acc =
-      (lift2 (fun f x -> f acc x) op e >>= go) <|> return acc in
-    e >>= fun init -> go init
-  in
 
   let expr = fix (fun expr ->
     let factor = parens expr <|> integer in
-    chainl1 factor (mul <|> div <|> add <|> sub))
+    chainl1 factor (mul <|> add))
   in
 
   match parse_string (sep_by end_of_line expr) input ~consume:All with
