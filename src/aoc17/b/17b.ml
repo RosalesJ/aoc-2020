@@ -4,7 +4,7 @@ let count_neighbors cubes (px, py, pz, pw) =
   let clamp k = k >= 0 && k < Array.length cubes in
   let around k = (Sequence.range (k - 1) (k + 1) ~start:`inclusive ~stop:`inclusive) in
   Sequence.cartesian_product (around px) (Sequence.cartesian_product (around py) (Sequence.cartesian_product (around pz) (around pw)))
-  |> Sequence.filter_map ~f:(fun (x,(y, (z, w))) -> Option.some_if (not (x = px && y = py && z = pz && w = pw)) (x, y, z, w))
+  |> Sequence.filter_map ~f:(fun (x, (y, (z, w))) -> Option.some_if (not (x = px && y = py && z = pz && w = pw)) (x, y, z, w))
   |> Sequence.count ~f:(fun (x, y, z, w) ->
     clamp x && clamp y && clamp z && clamp w && Char.equal '#' cubes.(w).(z).(y).(x))
 
@@ -21,7 +21,7 @@ let conway_cubes iters input =
     else a))))
   in
 
-  let rec _loop gens cubes =
+  let rec loop gens cubes =
     if gens = iters then
       cubes
     else
@@ -32,10 +32,10 @@ let conway_cubes iters input =
         | '.', 3 -> '#'
         | _ -> '.'))))
       in
-      _loop (gens + 1) cubes
+      loop (gens + 1) cubes
   in
 
-  _loop 0 cubes
+  loop 0 cubes
   |> Array.sum (module Int) ~f:(Array.sum (module Int) ~f:(Array.sum (module Int) ~f:(Array.count ~f:(Char.equal '#'))))
 
 let () =
