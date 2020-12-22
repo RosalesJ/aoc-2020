@@ -1,0 +1,3 @@
+(executable
+ (name 22a)
+ (libraries core stdio angstrom str))
