@@ -31,8 +31,6 @@ let jurassic_jigsaw input =
       | false -> Map.add_multi map ~key:(String.rev side) ~data:id)
   in
   let side_map = List.fold sides ~init:(Map.empty (module String)) ~f:try_add in
-  (* printf "%d\n" (Map.length side_map);
-  Map.fold side_map ~init:0 ~f:(fun ~key ~data x -> printf "%s: %s\n" key (String.concat ~sep:" " (List.map data ~f:(sprintf "%d"))) ; x) *)
 
   let edges =
     Map.to_alist side_map
